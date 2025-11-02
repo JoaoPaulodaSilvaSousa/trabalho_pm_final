@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DroneXpress</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>DroneXpress </h1>
+        <div class="mapa">
+            <img src="{{ url_for('static', filename='mapa2.jpg') }}" alt="Mapa ilustrado">
+            <img class="drone" src="{{ url_for('static', filename='drone.webp') }}" alt="Drone ilustrado">
+        </div>
+        <input type="text" name="pa" id="pa" placeholder="PONTO A">
+        <input type="text" name="pb" id="pb" placeholder="PONTO B">
+        <input type="text" name="Melhor Rota" id="mr" placeholder="MELHOR ROTA">
+        <input type="button" value="CALCULAR ROTA">
+    </div>
+</body>
+</html>
