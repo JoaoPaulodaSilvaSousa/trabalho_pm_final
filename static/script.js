@@ -11,6 +11,7 @@ let linha = null;
 let drone = null;
 let pontoB = null;
 let marcadorB = null;
+let droneChegou = false; // controla se o drone chegou
 
 // Ícone do drone
 const droneIcon = L.icon({
@@ -32,6 +33,11 @@ const marcadorA = L.marker(pontoA, { icon: baseIcon }).addTo(mapa);
 marcadorA.bindPopup('📍 Base Central').openPopup();
 setTimeout(() => marcadorA.closePopup(), 2000);
 
+// Preenche o input da base
+const inputA = document.getElementById('pa');
+inputA.value = "Av. Paulista, São Paulo - SP";
+inputA.setAttribute('readonly', true);
+
 // 🔹 Raio máximo permitido em metros
 const RAIO_MAXIMO = 10000; // 10 km
 
@@ -40,19 +46,26 @@ const geocoder = L.Control.geocoder({
     defaultMarkGeocode: false
 })
 .on('markgeocode', function (e) {
-    if (!pontoB) verificarDistanciaEPonto(e.geocode.center, e.geocode.name);
+    if (droneChegou) {
+        alert("O drone já chegou ao destino. É necessário resetar os pontos antes de definir outro destino.");
+        return;
+    }
+    verificarDistanciaEPonto(e.geocode.center, e.geocode.name);
 })
 .addTo(mapa);
 
 // 🖱️ Clique no mapa define o ponto B (destino)
 mapa.on('click', (e) => {
-    if (!pontoB)
-        verificarDistanciaEPonto(e.latlng, `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`);
+    if (droneChegou) {
+        alert("O drone já chegou ao destino. É necessário resetar os pontos antes de definir outro destino.");
+        return;
+    }
+    verificarDistanciaEPonto(e.latlng, `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`);
 });
 
 // 🔸 Verifica se o ponto está dentro do raio permitido
 function verificarDistanciaEPonto(latlng, descricao) {
-    const distancia = mapa.distance(pontoA, latlng); // distância em metros
+    const distancia = mapa.distance(pontoA, latlng);
     if (distancia > RAIO_MAXIMO) {
         alert(`❌ O destino está fora do raio máximo permitido (${RAIO_MAXIMO / 1000} km).`);
         return;
@@ -62,7 +75,7 @@ function verificarDistanciaEPonto(latlng, descricao) {
 
 // 🔹 Define o ponto B, desenha a linha e anima o drone
 function definirPontoB(latlng, descricao = '') {
-    if (pontoB) return; // evita duplicar
+    if (pontoB) return;
 
     marcadorB = L.marker(latlng).addTo(mapa).bindPopup('📦 Ponto B (Destino)').openPopup();
     setTimeout(() => marcadorB.closePopup(), 2000);
@@ -81,13 +94,13 @@ function desenharLinha(A, B) {
 
 // 🚁 Anima o drone indo de A até B
 function animarDrone(A, B) {
-    if (drone) mapa.removeLayer(drone); // evita duplicação
+    if (drone) mapa.removeLayer(drone);
 
-    const offset = 0.0002; // pequena elevação da linha
+    const offset = 0.0002;
     const start = L.latLng(A.lat + offset, A.lng);
     drone = L.marker(start, { icon: droneIcon }).addTo(mapa);
 
-    const duracao = 3000; // 3 segundos
+    const duracao = 3000;
     const inicio = performance.now();
 
     function mover(tempo) {
@@ -100,6 +113,7 @@ function animarDrone(A, B) {
             requestAnimationFrame(mover);
         } else {
             alert("🚁 O drone chegou ao destino com sucesso!");
+            droneChegou = true; // sinaliza que chegou
         }
     }
 
@@ -127,6 +141,7 @@ function resetarPontos() {
     marcadorA.openPopup();
     setTimeout(() => marcadorA.closePopup(), 3000);
 
+    droneChegou = false; // reseta a flag
     console.log("🔄 Ponto B e rota resetados!");
 }
 
