@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DroneXpress</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>DroneXpress </h1>
+        <p>Clique em dois pontos no mapa para simular a rota do drone.</p>
+
+        <div class="mapa" id="mapa">
+            <img src="{{ url_for('static', filename='mapa2.jpg') }}" alt="Mapa ilustrado" id="mapaImg">
+            <canvas id="mapaCanvas"></canvas>
+        </div>
+        <input type="text" name="pa" id="pa" placeholder="PONTO A">
+        <input type="text" name="pb" id="pb" placeholder="PONTO B">
+        <input type="text" name="Melhor Rota" id="mr" placeholder="MELHOR ROTA">
+        <input type="button" value="CALCULAR ROTA">
+        <button onclick="resetarPontos()">Resetar pontos</button>
+    </div>
+
+    <div id="resultado"></div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

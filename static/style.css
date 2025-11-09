@@ -1,0 +1,162 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body, html {
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: blue;
+}
+
+.container {
+    background-color: white;
+    height: 600px;
+    width: 600px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+}
+
+.mapa {
+    position: relative;
+    border: 2px solid black;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    height: 500px;
+    width: 500px;
+    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mapa > img:first-child {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+#mapaImg {
+    display: block;
+    max-width: 500px;
+    width: 100%;
+    height: auto;
+}
+
+#mapaCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* para permitir clique passar pela imagem */
+    z-index: 0;
+}
+
+.drone {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    width: 80px;
+    height: auto;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+input[type=text] {
+    margin-top: 10px;
+    text-align: left;
+    padding: 8px;
+    border-radius: 10px;
+    font-weight: bolder;
+    color: black;
+    background-color: #f0f0f0;
+}
+
+input[type=button] {
+    margin-top: 5px;border-radius: 5px;
+    padding: 8px;
+    font-weight: bolder;
+}
+
+.ponto {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+/* 🔴 Ponto A — marcador com letra e drone acima */
+.ponto.a {
+    background-color: red;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: 1px solid black;
+
+}
+
+.ponto.a::after {
+    content: "";
+    position: absolute;
+    top: -50px; /* distancia do drone acima do ponto A */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 50px;
+    background-image: url("/static/drone.webp");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 3;
+    aspect-ratio: 1 / 1; /* mantém proporção */
+}
+
+.no-drone::after {
+    content: none !important;
+}
+
+/* 🔵 Ponto B — com a letra B */
+.ponto.b {
+    background-color: blue;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: 1px solid black;
+}
+
+/* Linha que liga A e B */
+.linha {
+    position: absolute;
+    height: 5px;
+    background-color: white;
+    transform-origin: left center;
+    z-index: 1;
+    border: 1px solid black;
+}
+
+.drone-animado {
+      transition: left 1.6s linear, top 1.6s linear;
+}
+
+#resultado {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+}
