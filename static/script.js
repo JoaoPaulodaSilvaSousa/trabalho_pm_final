@@ -1,103 +1,133 @@
-const mapa = document.getElementById('mapa');
-const img = document.getElementById('mapaImg');
-const canvas = document.getElementById('mapaCanvas');
-const ctx = canvas.getContext('2d');
+// Inicializa o mapa (centrado em São Paulo)
+const mapa = L.map('mapa').setView([-23.5505, -46.6333], 13);
 
-let pontos = [];
+// Camada base do OpenStreetMap
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+}).addTo(mapa);
+
 let linha = null;
 let drone = null;
+let pontoB = null;
+let marcadorB = null;
 
-// Ajusta o tamanho do canvas ao tamanho da imagem
-img.onload = () => {
-    canvas.width = img.width;
-    canvas.height = img.height;
-};
-
-// Captura os cliques no mapa
-mapa.addEventListener('click', (e) => {
-    if (pontos.length >= 2) return; // só permite dois pontos (A e B)
-
-    const rect = img.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const ponto = document.createElement('div');
-    ponto.classList.add('ponto');
-    const label = pontos.length === 0 ? 'A' : 'B';
-    ponto.classList.add(pontos.length === 0 ? 'a' : 'b');
-    ponto.textContent = label;
-    ponto.style.left = `${x}px`;
-    ponto.style.top = `${y}px`;
-
-    mapa.appendChild(ponto);
-    pontos.push({ x, y });
-
-    if (pontos.length === 2) {
-        const pontoA = document.querySelector('.ponto.a');
-        pontoA.classList.add('no-drone');
-        desenharLinha();
-        animarDrone();
-    }
-
-    console.log(`Ponto ${label}:`, { x, y });
+// Ícone do drone
+const droneIcon = L.icon({
+    iconUrl: 'static/drone.webp',
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
 });
 
-function desenharLinha() {
-    const [A, B] = pontos;
+// Ícone da base
+const baseIcon = L.icon({
+    iconUrl: 'static/base.avif',
+    iconSize: [35, 35],
+    iconAnchor: [17, 35]
+});
 
-    const dx = B.x - A.x;
-    const dy = B.y - A.y;
-    const comprimento = Math.sqrt(dx * dx + dy * dy);
-    const angulo = Math.atan2(dy, dx) * (180 / Math.PI);
+// 🔹 Ponto fixo da base (centro de São Paulo)
+const pontoA = L.latLng(-23.5505, -46.6333);
+const marcadorA = L.marker(pontoA, { icon: baseIcon }).addTo(mapa);
+marcadorA.bindPopup('📍 Base Central').openPopup();
+setTimeout(() => marcadorA.closePopup(), 2000);
 
-    linha = document.createElement('div');
-    linha.classList.add('linha');
-    linha.style.width = `${comprimento}px`;
-    linha.style.left = `${A.x}px`;
-    linha.style.top = `${A.y}px`;
-    linha.style.transform = `rotate(${angulo}deg)`;
+// 🔹 Raio máximo permitido em metros
+const RAIO_MAXIMO = 10000; // 10 km
 
-    mapa.appendChild(linha);
+// 🔍 Campo de busca (por CEP ou endereço)
+const geocoder = L.Control.geocoder({
+    defaultMarkGeocode: false
+})
+.on('markgeocode', function (e) {
+    if (!pontoB) verificarDistanciaEPonto(e.geocode.center, e.geocode.name);
+})
+.addTo(mapa);
+
+// 🖱️ Clique no mapa define o ponto B (destino)
+mapa.on('click', (e) => {
+    if (!pontoB)
+        verificarDistanciaEPonto(e.latlng, `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`);
+});
+
+// 🔸 Verifica se o ponto está dentro do raio permitido
+function verificarDistanciaEPonto(latlng, descricao) {
+    const distancia = mapa.distance(pontoA, latlng); // distância em metros
+    if (distancia > RAIO_MAXIMO) {
+        alert(`❌ O destino está fora do raio máximo permitido (${RAIO_MAXIMO / 1000} km).`);
+        return;
+    }
+    definirPontoB(latlng, descricao);
 }
 
-// 🔹 Animação do drone indo de A até B
-function animarDrone() {
-    if (drone) drone.remove(); // remove drone anterior
+// 🔹 Define o ponto B, desenha a linha e anima o drone
+function definirPontoB(latlng, descricao = '') {
+    if (pontoB) return; // evita duplicar
 
-    const [A, B] = pontos;
-    drone = document.createElement('img');
-    drone.src = "/static/drone.webp";
-    drone.classList.add('drone');
-    drone.style.left = `${A.x}px`;
-    drone.style.top = `${A.y}px`;
-    mapa.appendChild(drone);
+    marcadorB = L.marker(latlng).addTo(mapa).bindPopup('📦 Ponto B (Destino)').openPopup();
+    setTimeout(() => marcadorB.closePopup(), 2000);
+    pontoB = latlng;
+    document.getElementById('pb').value = descricao;
 
-    const duracao = 2000; // duração da animação em ms
+    desenharLinha(pontoA, latlng);
+    animarDrone(pontoA, latlng);
+}
+
+// 🔹 Desenha a linha entre Base e Destino
+function desenharLinha(A, B) {
+    if (linha) linha.remove();
+    linha = L.polyline([A, B], { color: 'red', weight: 3 }).addTo(mapa);
+}
+
+// 🚁 Anima o drone indo de A até B
+function animarDrone(A, B) {
+    if (drone) mapa.removeLayer(drone); // evita duplicação
+
+    const offset = 0.0002; // pequena elevação da linha
+    const start = L.latLng(A.lat + offset, A.lng);
+    drone = L.marker(start, { icon: droneIcon }).addTo(mapa);
+
+    const duracao = 3000; // 3 segundos
     const inicio = performance.now();
 
     function mover(tempo) {
         const progresso = Math.min((tempo - inicio) / duracao, 1);
-        const x = A.x + (B.x - A.x) * progresso;
-        const y = A.y + (B.y - A.y) * progresso;
-
-        drone.style.left = `${x}px`;
-        drone.style.top = `${y}px`;
+        const lat = A.lat + (B.lat - A.lat) * progresso + offset;
+        const lng = A.lng + (B.lng - A.lng) * progresso;
+        drone.setLatLng([lat, lng]);
 
         if (progresso < 1) {
             requestAnimationFrame(mover);
         } else {
-            console.log("🚁 Drone chegou ao ponto B!");
+            alert("🚁 O drone chegou ao destino com sucesso!");
         }
     }
 
     requestAnimationFrame(mover);
 }
 
-// 🔸 Resetar tudo
+// 🔁 Resetar ponto B e rota
 function resetarPontos() {
-    pontos = [];
-    if (linha) linha.remove();
-    if (drone) drone.remove();
-    document.querySelectorAll('.ponto').forEach(p => p.remove());
-    console.log('Pontos resetados!');
+    if (marcadorB) {
+        mapa.removeLayer(marcadorB);
+        marcadorB = null;
+        pontoB = null;
+    }
+    if (linha) {
+        mapa.removeLayer(linha);
+        linha = null;
+    }
+    if (drone) {
+        mapa.removeLayer(drone);
+        drone = null;
+    }
+
+    document.getElementById('pb').value = '';
+    mapa.setView(pontoA, 13);
+    marcadorA.openPopup();
+    setTimeout(() => marcadorA.closePopup(), 3000);
+
+    console.log("🔄 Ponto B e rota resetados!");
 }
+
+window.resetarPontos = resetarPontos;
