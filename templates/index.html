@@ -1,38 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DroneXpress</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>DroneXpress </h1>
-        <p>Clique em dois pontos no mapa para simular a rota do drone.</p>
+    <!-- SEU CSS -->
+    <link rel="stylesheet" href="static/style.css">
 
-        <div id="mapa">
-            <canvas id="mapaCanvas"></canvas>
-        </div>
-        <label>Ponto A (Base):</label>
-        <input type="text" name="pa" id="pa" placeholder="Av. Paulista, São Paulo - SP" readonly>
-
-        <label>Ponto B (Destino):</label>
-        <input type="text" name="pb" id="pb" placeholder="Endereço  ou CEP">
-
-        <input type="text" name="Melhor Rota" id="mr" placeholder="MELHOR ROTA">
-
-        <input type="button" value="CALCULAR ROTA">
-
-        <button onclick="resetarPontos()">Resetar pontos</button>
-    </div>
-
-    <div id="resultado"></div>
+    <!-- Leaflet correto -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Geocoder -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css">
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Turf.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+    <h1>DroneXpress</h1>
+    <p>Clique no mapa para definir o destino.</p>
+
+    <!-- MAPA DO LEAFLET (USANDO SEU CSS) -->
+    <div id="mapa" class="mapa"></div>
+
+    <label>Ponto A (Base):</label>
+    <input type="text" id="pa" readonly>
+
+    <label>Ponto B (Destino):</label>
+    <input type="text" id="pb">
+
+    <label>Melhor Rota:</label>
+    <input type="text" id="mr" readonly>
+
+    <!-- 🔘 BOTÕES QUE SEU SCRIPT PRECISA -->
+    <input type="button" id="btnCalculate" value="Calcular Rota">
+    <input type="button" id="btnReset" value="Resetar">
+
+</div>
+
+<!-- SEU JAVASCRIPT -->
+<script src="static/script.js"></script>
+
 </body>
 </html>
