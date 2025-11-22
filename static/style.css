@@ -109,7 +109,6 @@ input[type=button] {
     z-index: 2;
 }
 
-/* 🔴 Ponto A — marcador com letra e drone acima */
 .ponto.a {
     background-color: red;
     color: white;
@@ -138,7 +137,6 @@ input[type=button] {
     content: none !important;
 }
 
-/* 🔵 Ponto B */
 .ponto.b {
     background-color: blue;
     color: white;
@@ -147,7 +145,6 @@ input[type=button] {
     border: 1px solid black;
 }
 
-/* Linha entre A e B */
 .linha {
     position: absolute;
     height: 5px;
@@ -165,4 +162,15 @@ input[type=button] {
     margin-top: 20px;
     font-size: 18px;
     font-weight: bold;
+}
+
+.leaflet-marker-icon[src*="base.avif"] {
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #3498db;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
+.leaflet-marker-icon {
+    background-color: transparent;
 }
